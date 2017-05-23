@@ -25,7 +25,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
 
-#include "linemod.cpp"
+#include "linemod.hpp"
 
 #include "intra_process_demo/image_pipeline/common.hpp"
 
@@ -36,12 +36,12 @@ public:
   LinemodNode(
     const std::string & input, const std::string & depth_input, const std::string & output,
     const std::string & node_name = "linemod_node")
-  : Node(node_name, "", true)
+  : Node(node_name, "", true),
+    linemod()
   {
-    cv::namedWindow("stored_color");
-    cv::namedWindow("new_depth");
+    cv::namedWindow("detection");
+    cv::namedWindow("depth");
     std::cout << "starting linemod node..." << std::endl;
-    load();
     auto qos = rmw_qos_profile_sensor_data;
     // Create a publisher on the input topic.
     pub_ = this->create_publisher<sensor_msgs::msg::Image>(output, qos);
@@ -83,6 +83,8 @@ public:
           encoding2mat_type(color_image_->encoding),
           color_image_->data.data());
 
+        cv::Mat display;
+
         if (frame_depth_.depth() == CV_32F)
         {
           frame_depth_.convertTo(frame_depth_, CV_16UC1, 1000.0);
@@ -90,14 +92,15 @@ public:
 
         if(frame_depth_.data != NULL)
         {
-          std::cout << "calling linemod..." << std::endl;
-          cv::imshow("stored_color", color);
-          doit(color, frame_depth_);
-          cv::imshow("new_depth", frame_depth_);
+          linemod.detect(color, frame_depth_, display);
+
+          cv::imshow("detection", display);
+          cv::imshow("depth", frame_depth_);
           cv::waitKey(1);
         }
       }
     }, qos);
+    std::cout << "linemod node set up" << std::endl;
   }
 
 private:
@@ -106,8 +109,9 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_depth_;
 
   cv::VideoCapture cap_;
+  Linemod linemod;
   sensor_msgs::msg::Image::SharedPtr color_image_;
-  cv::Mat frame_depth_, frame_color_;
+  cv::Mat frame_depth_;
 };
 
 #endif

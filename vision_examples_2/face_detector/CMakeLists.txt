@@ -51,17 +51,13 @@ include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}/openni2/include
 )
 
+add_library(linemod src/linemod.cpp)
+ament_target_dependencies(linemod
+  "OpenCV")
+
 add_executable(face_detector_node
   src/face_detector_node.cpp)
 ament_target_dependencies(face_detector_node
-  "rclcpp"
-  "sensor_msgs"
-  "vision_msgs"
-  "OpenCV")
-
-add_executable(linemod_node
-  src/linemod_node.cpp)
-ament_target_dependencies(linemod_node
   "rclcpp"
   "sensor_msgs"
   "vision_msgs"
@@ -82,6 +78,17 @@ ament_target_dependencies(face_detector_pipeline
 add_dependencies(face_detector_pipeline astra_openni2)
 target_link_libraries(face_detector_pipeline -lOpenNI2Orbbec ${Boost_LIBRARIES})
 
+
+add_executable(linemod_node
+  src/linemod_node.cpp)
+ament_target_dependencies(linemod_node
+  "rclcpp"
+  "sensor_msgs"
+  "vision_msgs"
+  "OpenCV"
+  "linemod")
+target_link_libraries(linemod_node linemod)
+
 add_executable(linemod_pipeline
   src/linemod_pipeline.cpp)
 ament_target_dependencies(linemod_pipeline
@@ -93,12 +100,13 @@ ament_target_dependencies(linemod_pipeline
   "astra_wrapper"
   "astra_openni2"
   "OpenCV"
-  "Boost")
-add_dependencies(linemod_pipeline astra_openni2)
-target_link_libraries(linemod_pipeline -lOpenNI2Orbbec ${Boost_LIBRARIES})
+  "Boost"
+  "linemod")
+# add_dependencies(linemod_pipeline astra_openni2)
+target_link_libraries(linemod_pipeline linemod -lOpenNI2Orbbec ${Boost_LIBRARIES})
 
 add_executable(linemod_trainer
-  src/linemod_trainer.cpp)
+  src/linemod_trainer_nonnode.cpp)
 ament_target_dependencies(linemod_trainer
   "OpenCV"
   "Boost")
