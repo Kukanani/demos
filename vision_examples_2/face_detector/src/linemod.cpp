@@ -146,7 +146,7 @@ void load()
 {
   std::cout << "begin loading" << std::endl;
   // Initialize HighGUI
-  cv::namedWindow("color");
+  // cv::namedWindow("color");
   cv::namedWindow("normals");
   // Initialize LINEMOD data structures
   // if (argc == 1)
@@ -178,7 +178,7 @@ void load()
 }
 
 
-void doit(cv::Mat& color_in, cv::Mat& depth_in)
+void doit(const cv::Mat& color_in, cv::Mat& depth_in)
 {
   std::cout << "performing linemod..." << std::endl;
   int num_modalities = (int)detector->getModalities().size();

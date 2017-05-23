@@ -172,10 +172,8 @@ int main(int argc, char * argv[])
   if (argc == 1)
   {
     filename = "linemod_templates.yml";
-    std::vector< cv::Ptr<cv::linemod::Modality> > modalities;
-    modalities.push_back(cv::makePtr<cv::linemod::DepthNormal>());
-    int T_DEFAULTS[] = {5, 8};
-    detector = cv::makePtr<cv::linemod::Detector>(modalities, std::vector<int>(T_DEFAULTS, T_DEFAULTS + 2));
+
+    detector = cv::linemod::getDefaultLINEMOD();
   }
   else
   {
@@ -214,7 +212,7 @@ int main(int argc, char * argv[])
     capture.retrieve(color, cv::CAP_OPENNI_BGR_IMAGE);
 
     std::vector<cv::Mat> sources;
-    // sources.push_back(color);
+    sources.push_back(color);
     sources.push_back(depth);
     cv::Mat display = color.clone();
 

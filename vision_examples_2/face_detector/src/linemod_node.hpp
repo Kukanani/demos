@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <atomic>
 
 #include "opencv2/opencv.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -37,7 +38,8 @@ public:
     const std::string & node_name = "linemod_node")
   : Node(node_name, "", true)
   {
-    cv::namedWindow("orig_color");
+    cv::namedWindow("stored_color");
+    cv::namedWindow("new_depth");
     std::cout << "starting linemod node..." << std::endl;
     load();
     auto qos = rmw_qos_profile_sensor_data;
@@ -47,24 +49,22 @@ public:
     // Create a subscription on the output topic.
     std::cout << "creating subscribers..." << std::endl;
     sub_color_ = this->create_subscription<sensor_msgs::msg::Image>(
-        input, [&](sensor_msgs::msg::Image::UniquePtr msg)
+        input, [&](sensor_msgs::msg::Image::SharedPtr msg)
     {
-      // // Create a cv::Mat from the image message (without copying).
-      // cv::Mat cv_mat(
-      //   msg->height, msg->width,
-      //   encoding2mat_type(msg->encoding),
-      //   msg->data.data());
-      // cv::cvtColor(cv_mat, cv_mat, CV_BGR2RGB);
+      color_image_ = msg;
+      std::cout << "stored color image" << std::endl;
 
-      // frame_color_ = cv_mat;
-      // std::cout << "stored color frame" << std::endl;
-      // cv::imshow("orig_color", frame_color_);
-      // cv::waitKey(1);
-
+      // Make a Mat so we can convert color space for this image, but do not
+      // store the Mat to avoid memory corruption
+      cv::Mat color(
+        color_image_->height, color_image_->width,
+        encoding2mat_type(color_image_->encoding),
+        color_image_->data.data());
+      cv::cvtColor(color, color, CV_BGR2RGB);
     }, qos);
 
     sub_depth_ = this->create_subscription<sensor_msgs::msg::Image>(
-        depth_input, [&](sensor_msgs::msg::Image::UniquePtr msg)
+        depth_input, [&](sensor_msgs::msg::Image::SharedPtr msg)
     {
       // Create a cv::Mat from the image message (without copying).
       cv::Mat cv_mat(
@@ -75,20 +75,28 @@ public:
       frame_depth_ = cv_mat;
       std::cout << "stored depth frame" << std::endl;
 
-      if (frame_depth_.depth() == CV_32F)
+      if (color_image_ != NULL)
       {
-        frame_depth_.convertTo(frame_depth_, CV_16UC1, 1000.0);
-        std::cout << "converted depth frame" << std::endl;
-      }
+        // Create a Mat once depth and color are both acquired.
+        cv::Mat color(
+          color_image_->height, color_image_->width,
+          encoding2mat_type(color_image_->encoding),
+          color_image_->data.data());
 
-      if(!(frame_depth_.data == NULL) /*&& !(frame_color_.data == NULL)*/)
-      {
-        std::cout << "calling linemod..." << std::endl;
-        // cv::imshow("orig_color", frame_color_);
-        // cv::waitKey(1000);
-        doit(frame_color_, frame_depth_);
-      }
+        if (frame_depth_.depth() == CV_32F)
+        {
+          frame_depth_.convertTo(frame_depth_, CV_16UC1, 1000.0);
+        }
 
+        if(frame_depth_.data != NULL)
+        {
+          std::cout << "calling linemod..." << std::endl;
+          cv::imshow("stored_color", color);
+          doit(color, frame_depth_);
+          cv::imshow("new_depth", frame_depth_);
+          cv::waitKey(1);
+        }
+      }
     }, qos);
   }
 
@@ -98,8 +106,8 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_depth_;
 
   cv::VideoCapture cap_;
-  cv::Mat frame_color_;
-  cv::Mat frame_depth_;
+  sensor_msgs::msg::Image::SharedPtr color_image_;
+  cv::Mat frame_depth_, frame_color_;
 };
 
 #endif
