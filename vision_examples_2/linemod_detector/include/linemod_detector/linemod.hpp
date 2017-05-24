@@ -30,6 +30,11 @@ private:
   int learning_lower_bound = 90;
   int learning_upper_bound = 95;
   cv::Mat display;
+
+  std::map<std::string, std::vector<cv::Mat> > Ts;
+  std::map<std::string, std::vector<cv::Mat> > Rs;
+  std::map<std::string, std::vector<float> > distances;
+
 };
 
 #endif

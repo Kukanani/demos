@@ -1,4 +1,4 @@
-#include "linemod.hpp"
+#include "linemod_detector/linemod.hpp"
 
 #include <iterator>
 #include <cstdio>
@@ -9,6 +9,10 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 
+
+typedef std::vector<cv::linemod::Template> TemplatePyramid;
+typedef std::map<cv::String, std::vector<TemplatePyramid> > TemplatesMap;
+
 // Functions to store detector and templates in single XML/YAML file
 cv::linemod::Detector Linemod::readLinemod(const std::string& filename)
 {
@@ -18,14 +22,48 @@ cv::linemod::Detector Linemod::readLinemod(const std::string& filename)
 
   cv::FileNode fn = fs["classes"];
   for (cv::FileNodeIterator i = fn.begin(), iend = fn.end(); i != iend; ++i)
+  {
     detector.readClass(*i);
+    cv::String class_id = (*i)["class_id"];
 
+    cv::FileNode tps_fn = (*i)["template_pyramids"];
+    cv::FileNodeIterator tps_it = tps_fn.begin(), tps_it_end = tps_fn.end();
+
+    // std::map<std::string, std::vector<cv::Mat> >::value_type T_val(class_id, cv::Mat());
+    // cv::Mat& T_ref = T_val.second;
+
+    // std::map<std::string, std::vector<cv::Mat> >::value_type R_val(class_id, cv::Mat());
+    // cv::Mat& R_ref = R_val.second;
+
+    // std::map<std::string, std::vector<float> >::value_type distance_val(class_id, float);
+    // float& distance_ref = distance_val.second;
+    int expected_id = 0;
+
+    // cv::FileNode tps_fn = fn["template_pyramids"];
+    for ( ; tps_it != tps_it_end; ++tps_it, ++expected_id)
+    {
+      int template_id = (*tps_it)["template_id"];
+
+      cv::Mat T_new, R_new;
+
+      cv::FileNodeIterator fni = (*tps_it)["T"].begin();
+      fni >> T_new;
+      Ts[class_id].push_back(T_new);
+
+      fni = (*tps_it)["R"].begin();
+      fni >> R_new;
+      Rs[class_id].push_back(R_new);
+
+      distances[class_id].push_back((*tps_it)["distance"]);
+    }
+  }
   return detector;
 }
 
-Linemod::Linemod() :
-  detector_(readLinemod("linemod_templates.yml"))
+Linemod::Linemod()
 {
+  // not initializer list because it also fills the T, R and distance vectors.
+  detector_ = readLinemod("linemod_ros2.yml");
   cv::namedWindow("normals");
 
   std::vector<cv::String> ids = detector_.classIds();
@@ -43,6 +81,7 @@ Linemod::Linemod() :
 
 void Linemod::detect(cv::Mat& color_in, cv::Mat& depth_in, cv::Mat& display)
 {
+  
   int num_modalities = detector_.getModalities().size();
   std::cout << "performing linemod with " << num_modalities << " modalities..." << std::endl;
 
@@ -69,16 +108,22 @@ void Linemod::detect(cv::Mat& color_in, cv::Mat& depth_in, cv::Mat& display)
     {
       ++classes_visited;
 
-      if (show_match_result)
-      {
-        printf("Similarity: %5.1f%%; x: %3d; y: %3d; class: %s; template: %3d\n",
-               m.similarity, m.x, m.y, m.class_id.c_str(), m.template_id);
-      }
-
       // Draw matching template
       const std::vector<cv::linemod::Template>& templates = detector_.getTemplates(m.class_id, m.template_id);
 
       drawResponse(templates, num_modalities, display, cv::Point(m.x, m.y), detector_.getT(0));
+
+      if (show_match_result)
+      {
+        std::cout << "Similarity: " << m.similarity << ", x: " << m.x << ", y: "
+                  << m.y << ", class: " << m.class_id.c_str() << ", template: "
+                  << m.template_id << std::endl;
+
+        float distance = distances.at(m.class_id).at(m.template_id);
+        std::cout << "distance " << distance << std::endl;
+        // also could print T and R but that will be very verbose, so skip it
+        // for now
+      }
     }
   }
 

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "linemod_node.hpp"
+#include "linemod_detector/linemod_node.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 

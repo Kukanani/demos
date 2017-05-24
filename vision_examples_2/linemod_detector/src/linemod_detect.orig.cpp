@@ -48,8 +48,8 @@
 // #include <object_recognition_core/db/ModelReader.h>
 // #include <object_recognition_core/common/pose_result.h>
 
-// #include <object_recognition_renderer/utils.h>
-// #include <object_recognition_renderer/renderer3d.h>
+// #include <ork_renderer/utils.h>
+// #include <ork_renderer/renderer3d.h>
 
 #include "linemod_icp.h"
 

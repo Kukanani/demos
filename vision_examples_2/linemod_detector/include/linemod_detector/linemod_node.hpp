@@ -25,7 +25,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
 
-#include "linemod.hpp"
+#include "linemod_detector/linemod.hpp"
 
 #include "intra_process_demo/image_pipeline/common.hpp"
 
