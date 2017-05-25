@@ -56,7 +56,7 @@ include_directories(
   ${ork_renderer_INCLUDE_DIRS}
 )
 
-add_library(linemod src/linemod.cpp)
+add_library(linemod src/linemod.cpp src/linemod_icp.cpp)
 ament_target_dependencies(linemod
   "OpenCV")
 
@@ -67,8 +67,12 @@ ament_target_dependencies(linemod_node
   "sensor_msgs"
   "vision_msgs"
   "OpenCV"
-  "linemod")
-target_link_libraries(linemod_node linemod)
+  "linemod"
+  "ork_renderer"
+  "GLUT"
+  "ASSIMP"
+  "OPENGL")
+target_link_libraries(linemod_node linemod "freeimage" ${ork_renderer_LIBRARIES})
 
 add_executable(linemod_pipeline
   src/linemod_pipeline.cpp)
@@ -82,9 +86,14 @@ ament_target_dependencies(linemod_pipeline
   "astra_openni2"
   "OpenCV"
   "Boost"
-  "linemod")
+  "linemod"
+  "ork_renderer"
+  "GLUT"
+  "ASSIMP"
+  "OPENGL")
 # add_dependencies(linemod_pipeline astra_openni2)
 target_link_libraries(linemod_pipeline linemod -lOpenNI2Orbbec ${Boost_LIBRARIES} )
+target_link_libraries(linemod_pipeline "freeimage" ${ork_renderer_LIBRARIES})
 
 add_executable(linemod_train_kinect
   src/linemod_trainer_nonnode.cpp)
@@ -102,9 +111,6 @@ ament_target_dependencies(linemod_train
   "ASSIMP"
   "OPENGL")
 target_link_libraries(linemod_train "freeimage")
-
-MESSAGE(STATUS "foobag")
-MESSAGE(STATUS ${ASSIMP_LIBRARIES})
 target_link_libraries(linemod_train ${ork_renderer_LIBRARIES})
 
 install(TARGETS

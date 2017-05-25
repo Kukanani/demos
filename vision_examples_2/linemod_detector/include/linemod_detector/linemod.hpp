@@ -7,7 +7,7 @@
 
 #include <vector>
 
-// forward declaration
+#include "ork_renderer/utils.h"
 
 class Linemod {
 public:
@@ -21,6 +21,8 @@ private:
 
   cv::linemod::Detector readLinemod(const std::string& filename);
 
+  void inferDepth(cv::Mat_<cv::Vec3f>& depth_real_ref_raw, cv::linemod::Match& match);
+
   cv::linemod::Detector detector_;
   // Various settings and flags
   bool show_match_result = true;
@@ -33,8 +35,9 @@ private:
 
   std::map<std::string, std::vector<cv::Mat> > Ts;
   std::map<std::string, std::vector<cv::Mat> > Rs;
+  std::map<std::string, std::vector<cv::Mat> > Ks;
   std::map<std::string, std::vector<float> > distances;
-
+  std::map<std::string, RendererIterator*> renderer_iterators;
 };
 
 #endif
