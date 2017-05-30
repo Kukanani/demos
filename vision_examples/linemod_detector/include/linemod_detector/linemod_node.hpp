@@ -25,9 +25,16 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
 
+#include "vision_msgs/msg/detection3_d.hpp"
+#include "vision_msgs/msg/detection3_d_array.hpp"
+#include "vision_msgs/msg/object_hypothesis_with_pose.hpp"
+
 #include "linemod_detector/linemod.hpp"
 
 #include "intra_process_demo/image_pipeline/common.hpp"
+
+#include "rclcpp/rclcpp.hpp"
+#include "rcl/rcl.h"
 
 // Node that receives an image, locates faces and draws boxes around them, and publishes it again.
 class LinemodNode : public rclcpp::Node
@@ -45,6 +52,7 @@ public:
     auto qos = rmw_qos_profile_sensor_data;
     // Create a publisher on the input topic.
     pub_ = this->create_publisher<sensor_msgs::msg::Image>(output, qos);
+    detections_pub_ = this->create_publisher<vision_msgs::msg::Detection3DArray>("detections", qos);
     std::weak_ptr<std::remove_pointer<decltype(pub_.get())>::type> captured_pub = pub_;
     // Create a subscription on the output topic.
     std::cout << "creating subscribers..." << std::endl;
@@ -92,8 +100,38 @@ public:
 
         if(frame_depth_.data != NULL)
         {
-          linemod.detect(color, frame_depth_, display);
+          auto detections = linemod.detect(color, frame_depth_, display);
 
+          // convert the list of LinemodDetections to something that can be
+          // published - namely, a Detection3DArray from vision_msgs.
+
+          if(detections.size() > 0)
+          {
+            vision_msgs::msg::Detection3DArray detections_msg;
+
+            for(auto it = detections.begin(); it != detections.end(); ++it)
+            {
+              vision_msgs::msg::Detection3D detection;
+              // TODO make agnostic
+              detection.header.frame_id = "openni_depth_optical_frame";
+              detection.header.stamp = rclcpp::Time::now();
+
+              vision_msgs::msg::ObjectHypothesisWithPose hypothesis;
+              hypothesis.score = 1.0;
+              // TODO make this vary based on detected object class
+              hypothesis.id = 0;
+              hypothesis.pose.position.x = it->translation[0];
+              hypothesis.pose.position.y = it->translation[1];
+              hypothesis.pose.position.z = it->translation[2];
+              detection.results.push_back(hypothesis);
+
+              detections_msg.detections.push_back(detection);
+              std::cout << "added detection to detection list" << std::endl;
+            }
+            std::cout << "publishing detections" << std::endl;
+            detections_pub_->publish(detections_msg);
+          }
+          std::cout << "------------------------------------------------------" << std::endl;
           cv::imshow("detection", display);
           cv::imshow("depth", frame_depth_);
           cv::waitKey(1);
@@ -105,6 +143,7 @@ public:
 
 private:
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_;
+  rclcpp::Publisher<vision_msgs::msg::Detection3DArray>::SharedPtr detections_pub_;
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_color_;
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_depth_;
 

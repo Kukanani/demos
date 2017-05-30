@@ -102,7 +102,7 @@ Linemod::Linemod()
 }
 
 
-void Linemod::detect(cv::Mat& color_in, cv::Mat& depth_in, cv::Mat& display)
+std::vector<LinemodDetection> Linemod::detect(cv::Mat& color_in, cv::Mat& depth_in, cv::Mat& display)
 {
 
   int num_modalities = detector_.getModalities().size();
@@ -128,11 +128,13 @@ void Linemod::detect(cv::Mat& color_in, cv::Mat& depth_in, cv::Mat& display)
   cv::Mat_<float> K(3,3,CV_32F);
   cv::rgbd::depthTo3d(depth_in, K, depth_real_ref_raw);
 
+  auto lds = std::vector<LinemodDetection>();
   for (int i = 0; (i < (int)matches.size()) && (classes_visited < num_classes); ++i)
   {
     cv::linemod::Match m = matches[i];
-
-    inferDepth(depth_real_ref_raw, m);
+    cv::Vec3f translation;
+    cv::Matx33f rotation;
+    inferDepth(depth_real_ref_raw, m, translation, rotation);
 
     if (visited.insert(m.class_id).second)
     {
@@ -151,23 +153,29 @@ void Linemod::detect(cv::Mat& color_in, cv::Mat& depth_in, cv::Mat& display)
 
         float distance = distances.at(m.class_id).at(m.template_id);
         std::cout << "distance " << distance << std::endl;
-        // also could print T and R but that will be very verbose, so skip it
-        // for now
+
       }
+      LinemodDetection ld;
+      ld.class_name = m.class_id.c_str();
+      ld.translation = translation;
+      ld.rotation = rotation;
+
+      lds.push_back(ld);
     }
   }
 
   if (show_match_result && matches.empty())
     printf("No matches found...\n");
 
-  if (show_match_result)
-    printf("------------------------------------------------------------\n");
 
   cv::imshow("normals", quantized_images[1]);
   cv::waitKey(1);
+
+  std::cout << "linemod detector detection complete, found " << lds.size() << "matches" << std::endl;
+  return lds;
 }
 
-void Linemod::inferDepth(cv::Mat_<cv::Vec3f>& depth_real_ref_raw, cv::linemod::Match& match)
+void Linemod::inferDepth(cv::Mat_<cv::Vec3f>& depth_real_ref_raw, cv::linemod::Match& match, cv::Vec3f& T_real_icp, cv::Matx33f& R_real_icp)
 {
   cv::Matx33d R_match = Rs.at(match.class_id)[match.template_id].clone();
   cv::Vec3d T_match = Ts.at(match.class_id)[match.template_id].clone();
@@ -220,14 +228,14 @@ void Linemod::inferDepth(cv::Mat_<cv::Vec3f>& depth_real_ref_raw, cv::linemod::M
   {
     std::cerr << "error: T_crop out of range" << std::endl;
   }
-  cv::Vec3f T_real_icp(T_crop);
+  T_real_icp = cv::Vec3f(T_crop);
 
   //initialize the rotation based on model data
   if (!cv::checkRange(R_match))
   {
     std::cerr << "error: R_match out of range" << std::endl;
   }
-  cv::Matx33f R_real_icp(R_match);
+  R_real_icp = cv::Matx33f(R_match);
 
   //get the point clouds (for both reference and model)
   std::vector<cv::Vec3f> pts_real_model_temp;

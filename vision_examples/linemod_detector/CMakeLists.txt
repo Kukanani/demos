@@ -16,6 +16,8 @@ find_package(ork_renderer REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(ASSIMP REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(vision_msgs REQUIRED)
+find_package(intra_process_demo REQUIRED)
 
 find_package(OpenCV REQUIRED)
 
@@ -54,6 +56,8 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR}/openni2/include
   ${ork_renderer_INCLUDE_DIRS}
+  ${intra_process_demo_INCLUDE_DIRS}
+  ${vision_msgs_INCLUDE_DIRS}
 )
 
 add_library(linemod src/linemod.cpp src/linemod_icp.cpp)
@@ -71,7 +75,8 @@ ament_target_dependencies(linemod_node
   "ork_renderer"
   "GLUT"
   "ASSIMP"
-  "OPENGL")
+  "OPENGL"
+  "intra_process_demo")
 target_link_libraries(linemod_node linemod "freeimage" ${ork_renderer_LIBRARIES})
 
 add_executable(linemod_pipeline
@@ -90,10 +95,9 @@ ament_target_dependencies(linemod_pipeline
   "ork_renderer"
   "GLUT"
   "ASSIMP"
-  "OPENGL")
-# add_dependencies(linemod_pipeline astra_openni2)
-target_link_libraries(linemod_pipeline linemod -lOpenNI2Orbbec ${Boost_LIBRARIES} )
-target_link_libraries(linemod_pipeline "freeimage" ${ork_renderer_LIBRARIES})
+  "OPENGL"
+  "intra_process_demo")
+target_link_libraries(linemod_pipeline linemod -lOpenNI2Orbbec ${Boost_LIBRARIES} "freeimage")
 
 add_executable(linemod_train_kinect
   src/linemod_trainer_nonnode.cpp)

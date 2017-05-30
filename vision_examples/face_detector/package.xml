@@ -17,12 +17,14 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>vision_msgs</build_depend>
   <build_depend>astra_camera</build_depend>
+  <build_depend>intra_process_demo</build_depend>
 
   <exec_depend>libopencv-dev</exec_depend>
   <exec_depend>rclcpp</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>vision_msgs</exec_depend>
   <exec_depend>astra_camera</exec_depend>
+  <exec_depend>intra_process_demo</exec_depend>
 
   <export><build_type>ament_cmake</build_type></export>
 </package>

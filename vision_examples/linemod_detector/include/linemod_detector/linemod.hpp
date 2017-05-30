@@ -9,11 +9,17 @@
 
 #include "ork_renderer/utils.h"
 
+struct LinemodDetection {
+  cv::Matx33f rotation;
+  cv::Vec3f translation;
+  std::string class_name;
+};
+
 class Linemod {
 public:
   Linemod();
 
-  void detect(cv::Mat& color_in, cv::Mat& depth_in, cv::Mat& display);
+  std::vector<LinemodDetection> detect(cv::Mat& color_in, cv::Mat& depth_in, cv::Mat& display);
 
 private:
   void drawResponse(const std::vector<cv::linemod::Template>& templates,
@@ -21,7 +27,7 @@ private:
 
   cv::linemod::Detector readLinemod(const std::string& filename);
 
-  void inferDepth(cv::Mat_<cv::Vec3f>& depth_real_ref_raw, cv::linemod::Match& match);
+  void inferDepth(cv::Mat_<cv::Vec3f>& depth_real_ref_raw, cv::linemod::Match& match, cv::Vec3f& T_real_icp, cv::Matx33f& R_real_icp);
 
   cv::linemod::Detector detector_;
   // Various settings and flags

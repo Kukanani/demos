@@ -12,6 +12,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
 find_package(astra_camera REQUIRED)
+find_package(intra_process_demo REQUIRED)
 
 find_package(OpenCV REQUIRED)
 
@@ -57,7 +58,8 @@ ament_target_dependencies(face_detector_node
   "rclcpp"
   "sensor_msgs"
   "vision_msgs"
-  "OpenCV")
+  "OpenCV"
+  "intra_process_demo")
 
 add_executable(face_detector_pipeline
   src/face_detector_pipeline.cpp)
@@ -70,7 +72,8 @@ ament_target_dependencies(face_detector_pipeline
   "astra_wrapper"
   "astra_openni2"
   "OpenCV"
-  "Boost")
+  "Boost"
+  "intra_process_demo")
 add_dependencies(face_detector_pipeline astra_openni2)
 target_link_libraries(face_detector_pipeline -lOpenNI2Orbbec ${Boost_LIBRARIES})
 
