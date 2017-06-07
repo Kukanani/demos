@@ -15,6 +15,7 @@ find_package(std_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 
 include_directories(include)
+ament_export_include_directories(include)
 
 ##
 ## Demos
