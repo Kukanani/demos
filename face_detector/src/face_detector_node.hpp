@@ -42,6 +42,7 @@ public:
     // Create a subscription on the output topic.
     sub_ = this->create_subscription<sensor_msgs::msg::Image>(
       input, [captured_pub](sensor_msgs::msg::Image::UniquePtr msg) {
+      std::cout << "image received!" << std::endl;
       auto pub_ptr = captured_pub.lock();
       if (!pub_ptr) {
         return;
@@ -65,11 +66,6 @@ public:
           cv::Point center( faces[i].x + faces[i].width*0.5, faces[i].y + faces[i].height*0.5 );
           cv::ellipse( cv_mat, center, cv::Size( faces[i].width*0.5, faces[i].height*0.5), 0, 0, 360, cv::Scalar( 255, 0, 255 ), 4, 8, 0 );
       }
-      // do Haar wavelet face detection.
-
-      // Draw box around the face.
-
-
       // Publish it along.
       pub_ptr->publish(msg);
     }, qos);
