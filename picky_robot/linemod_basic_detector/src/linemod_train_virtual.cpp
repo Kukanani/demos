@@ -33,6 +33,7 @@
  *
  */
 
+#include <exception>
 #include "linemod_basic_detector/linemod_train_virtual.hpp"
 
 void Trainer::writeLinemod(const std::string& filename)
@@ -112,20 +113,6 @@ void Trainer::train(std::string filename, bool use_rgb, bool use_depth)
 
   cv::Ptr<cv::linemod::Detector> detector_ptr = generateLinemod(use_rgb, use_depth);
   detector_ = *detector_ptr;
-
-  // Define the display
-  //assign the parameters of the renderer
-  renderer_n_points_ = param_n_points_;
-  renderer_angle_step_ = param_angle_step_;
-  renderer_radius_min_ = param_radius_min_;
-  renderer_radius_max_ = param_radius_max_;
-  renderer_radius_step_ = param_radius_step_;
-  renderer_width_ = param_width_;
-  renderer_height_ = param_height_;
-  renderer_near_ = param_near_;
-  renderer_far_ = param_far_;
-  renderer_focal_length_x_ = param_focal_length_x_;
-  renderer_focal_length_y_ = param_focal_length_y_;
 
   // the model name can be specified on the command line.
   if (mesh_path_.empty())
@@ -214,22 +201,78 @@ int main(int argc, char** argv)
 {
   if(argc < 4)
   {
-    std::cout << "usage is: linemod_train_virtual <d|r|b> input_file output_file"
+    std::cout << "usage is: linemod_train_virtual <d|r|b> input_file "
+              << "output_file [n_points] [angle_step] [radius_min]"
+              << "[radius_max] [radius_step] [render_width] [render_height] "
+              << "[render_near] [render_far] [focal_x] [focal_y]"
               << std::endl
               << "where:" << std::endl
               << "\td: use depth modality only" << std::endl
               << "\tr: use rgb modality only" << std::endl
-              << "\tb: use both modalities" << std::endl;
+              << "\tb: use both modalities" << std::endl
+              << "and: " << std::endl
+              << "\tn_points: density of render point sampling" << std::endl
+              << "\tangle_step: distance between consecutive render points "
+                 << "[deg]" << std::endl
+              << "\tradius_min: minimum distance to object" << std::endl
+              << "\tradius_max: maximum distance to object" << std::endl
+              << "\tradius_step: radial distance between render points "
+                 << "[m]" << std::endl
+              << "\trender_width: width of rendered image [px]" << std::endl
+              << "\trender_height: height of rendered image [px]" << std::endl
+              << "\trender_near: near clipping plane for render" << std::endl
+              << "\trender_far: far clipping plane for render" << std::endl
+              << "\tfocal_x: focal length, x [px]" << std::endl
+              << "\tfocal_y: focal length, y [px]" << std::endl;
     return 1;
   }
+  bool valid = true;
+
   bool depth = (argv[1][0] == 'd' || argv[1][0] == 'b');
   bool rgb = (argv[1][0] == 'r' || argv[1][0] == 'b');
 
+  valid &= (depth | rgb);
+
+
   Trainer t;
+  try {
+    if(argc > 4) {
+      t.renderer_n_points_ = std::stoi(argv[4]);
+    } if(argc > 5) {
+      t.renderer_angle_step_ = std::stoi(argv[5]);
+    } if(argc > 6) {
+      t.renderer_radius_min_ = std::stod(argv[6]);
+    } if(argc > 7) {
+      t.renderer_radius_max_ = std::stod(argv[7]);
+    } if(argc > 8) {
+      t.renderer_radius_step_ = std::stod(argv[8]);
+    } if(argc > 9) {
+      t.renderer_width_ = std::stoi(argv[9]);
+    } if(argc > 10) {
+      t.renderer_height_ = std::stoi(argv[10]);
+    } if(argc > 11) {
+      t.renderer_near_ = std::stod(argv[11]);
+    } if(argc > 12) {
+      t.renderer_far_ = std::stod(argv[12]);
+    } if(argc > 13) {
+      t.renderer_focal_length_x_ = std::stod(argv[13]);
+    } if(argc > 14) {
+      t.renderer_focal_length_y_ = std::stod(argv[14]);
+    }
+  }
+  catch(std::invalid_argument e) {
+    valid = false;
+  }
+  if(!valid) {
+    std::cerr << "error parsing arguments" << std::endl;
+    return -1;
+  }
+
   t.train(argv[2], rgb, depth);
 
   // save the data in a form easily readable by linemod.
   // For now we're using a flat file representation, but we could be using
   // a database, like ORK does. This is just more straightforward
+  std::cout << "training complete, saving results to file...." << std::endl;
   t.writeLinemod(argv[3]);
 }

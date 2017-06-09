@@ -102,20 +102,21 @@ cv::linemod::Detector Linemod::readLinemod(const std::string& filename)
               << class_id << std::endl;
 
     Renderer3d *renderer_ = new Renderer3d((*i)["mesh_path"]);
+    Trainer dummy;
     renderer_->set_parameters(
-      Trainer::param_width_,
-      Trainer::param_height_,
-      Trainer::param_focal_length_x_,
-      Trainer::param_focal_length_y_,
-      Trainer::param_near_,
-      Trainer::param_far_);
+      dummy.renderer_width_,
+      dummy.renderer_height_,
+      dummy.renderer_focal_length_x_,
+      dummy.renderer_focal_length_y_,
+      dummy.renderer_near_,
+      dummy.renderer_far_);
 
     RendererIterator *renderer_iterator_ = new RendererIterator(renderer_,
-        Trainer::param_n_points_);
-    renderer_iterator_->angle_step_ = Trainer::param_angle_step_;
-    renderer_iterator_->radius_min_ = float(Trainer::param_radius_min_);
-    renderer_iterator_->radius_max_ = float(Trainer::param_radius_max_);
-    renderer_iterator_->radius_step_ = float(Trainer::param_radius_step_);
+        dummy.renderer_n_points_);
+    renderer_iterator_->angle_step_ = dummy.renderer_angle_step_;
+    renderer_iterator_->radius_min_ = float(dummy.renderer_radius_min_);
+    renderer_iterator_->radius_max_ = float(dummy.renderer_radius_max_);
+    renderer_iterator_->radius_step_ = float(dummy.renderer_radius_step_);
 
     renderer_iterators.insert(
         std::pair<std::string,RendererIterator*>(class_id, renderer_iterator_));

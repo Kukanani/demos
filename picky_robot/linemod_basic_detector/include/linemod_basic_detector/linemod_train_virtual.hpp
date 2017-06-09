@@ -76,29 +76,17 @@ public:
   std::vector<float>  distances_;
   std::vector<cv::Mat>  Ks_;
 
-  constexpr static int param_n_points_ = 150;
-  constexpr static int param_angle_step_ = 10;
-  constexpr static double param_radius_min_ = 0.6;
-  constexpr static double param_radius_max_ = 1.1;
-  constexpr static double param_radius_step_ = 0.4;
-  constexpr static int param_width_ = 640;
-  constexpr static int param_height_ = 480;
-  constexpr static double param_near_ = 0.1;
-  constexpr static double param_far_ = 1000.0;
-  constexpr static double param_focal_length_x_ = 525;
-  constexpr static double param_focal_length_y_ = 525;
-
-  int renderer_n_points_;
-  int renderer_angle_step_;
-  double renderer_radius_min_;
-  double renderer_radius_max_;
-  double renderer_radius_step_;
-  int renderer_width_;
-  int renderer_height_;
-  double renderer_near_;
-  double renderer_far_;
-  double renderer_focal_length_x_;
-  double renderer_focal_length_y_;
+  int renderer_n_points_= 150;
+  int renderer_angle_step_= 10;
+  double renderer_radius_min_= 0.6;
+  double renderer_radius_max_= 1.1;
+  double renderer_radius_step_= 0.4;
+  int renderer_width_= 640;
+  int renderer_height_= 480;
+  double renderer_near_= 0.1;
+  double renderer_far_= 1000.0;
+  double renderer_focal_length_x_= 525;
+  double renderer_focal_length_y_= 525;
 
 
   void train(std::string filename, bool use_rgb = true, bool use_depth = true);
