@@ -140,5 +140,4 @@ if(BUILD_TESTING)
   call_for_each_rmw_implementation(tests)
 endif()
 
-ament_export_include_directories(include)
 ament_package()

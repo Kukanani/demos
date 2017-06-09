@@ -4,9 +4,14 @@
   <name>linemod_basic_detector</name>
   <version>0.0.0</version>
   <description>
-    ROS2 Object detection using Linemod and the Orbbec Astra camera.
+    ROS2 Object detection using Linemod and virtual training. This is
+    a partial port of the Object Recognition Kitchen's core,
+    virtual trainer, and LINEMOD detector.
   </description>
+  <author>Vincent Rabaud</author>
+  <author email="adam.d.allevato@gmail.com">Adam Allevato</author>
   <maintainer email="allevato@utexas.edu">Adam Allevato</maintainer>
+
   <license>Apache License 2.0</license>
   <license>BSD</license>
 
@@ -19,14 +24,10 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>vision_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
-
-  <build_depend>astra_camera</build_depend>
   <build_depend>ork_renderer</build_depend>
   <build_depend>intra_process_demo</build_depend>
   <build_depend>tf2</build_depend>
-  <build_depend>tf2_ros</build_depend>
   <build_depend>tf2_geometry_msgs</build_depend>
-
 
   <exec_depend>libopencv-dev</exec_depend>
   <exec_depend>rclcpp</exec_depend>
@@ -34,12 +35,9 @@
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>vision_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
-
-  <exec_depend>astra_camera</exec_depend>
   <exec_depend>ork_renderer</exec_depend>
   <exec_depend>intra_process_demo</exec_depend>
   <exec_depend>tf2</exec_depend>
-  <exec_depend>tf2_ros</exec_depend>
   <exec_depend>tf2_geometry_msgs</exec_depend>
 
   <export><build_type>ament_cmake</build_type></export>
