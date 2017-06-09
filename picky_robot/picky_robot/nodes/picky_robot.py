@@ -86,7 +86,6 @@ class PickyRobot:
         while rclpy.ok():
             rclpy.spin_once(node)
             sleep(0.1)
-        rclpy.shutdown()
 
 def main(args=None):
     pr = PickyRobot(args)

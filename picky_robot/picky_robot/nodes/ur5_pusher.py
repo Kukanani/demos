@@ -31,14 +31,7 @@ APPROACH_ACCEL = 0.08
 MAX_X = 0.4
 MIN_X = -0.4
 
-class UR5Motion:
-    def test_push_callback(self, msg):
-        print("time to push!")
-        # self.robot.translate_tool((0,0,0.01))
-        # self.robot.movel((-0.1, -0.33, 0.06, math.pi/2, 0, 0), APPROACH_VEL, APPROACH_ACCEL)
-        # self.robot.translate_tool((0, 0, PUSH_DISTANCE), PUSH_VEL, PUSH_ACCEL)
-        # self.robot.translate_tool((0, 0, -PUSH_DISTANCE), PUSH_VEL, PUSH_ACCEL)
-
+class UR5Pusher:
     def push_position_callback(self, msg):
         print("push request received at x-pos " + str(msg.data))
         # self.robot.translate_tool((0,0,0.01))
@@ -56,14 +49,17 @@ class UR5Motion:
 
     def set_up_robot(self):
         # wait for connection
-        try:
-            self.robot = urx.Robot("192.168.100.100")
-            sleep(0.2)
-        except:
-            # couldn't connect
-            print("attempting to connect to robot...")
-            sleep(5)
-        print('current tool pose:', self.robot.getl())
+        connected = False
+        while not connected:
+            try:
+                self.robot = urx.Robot("192.168.100.100")
+                sleep(0.2)
+                connected = True
+            except:
+                # couldn't connect
+                print("attempting to connect to robot...")
+                sleep(5)
+        print('Connected to robot, current tool pose:', self.robot.getl())
 
     def __init__(self, args):
         if args is None:
@@ -72,20 +68,24 @@ class UR5Motion:
 
         self.set_up_robot()
 
-        node = rclpy.create_node('ur5_motion')
-        sub = node.create_subscription(String, '~/test_push', self.test_push_callback, qos_profile=qos_profile_sensor_data)
+        node = rclpy.create_node('ur5_pusher')
         sub2 = node.create_subscription(Float32, '~/push_position', self.push_position_callback, qos_profile=qos_profile_sensor_data)
         # assert sub  # prevent unused warning
 
-        while rclpy.ok():
-            rclpy.spin_once(node)
-            # sleep(0.1)
-        rclpy.shutdown()
+        interrupt = False
+        while rclpy.ok() and not interrupt:
+            try:
+                rclpy.spin_once(node)
+                sleep(0.1)
+            except KeyboardInterrupt:
+                interrupt = True
+
         self.robot.close()
+        print('Disconnected from robot.')
 
 
 def main(args=None):
-    pr = UR5Motion(args)
+    pr = UR5Pusher(args)
 
 if __name__ == '__main__':
     main()
