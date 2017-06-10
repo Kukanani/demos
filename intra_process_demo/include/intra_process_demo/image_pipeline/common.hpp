@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// TODO: this file is duplicated in multiple places. See also:
+//   ros2/demos/image_tools/src/showimage.cpp
+
 #ifndef IMAGE_PIPELINE__COMMON_HPP_
 #define IMAGE_PIPELINE__COMMON_HPP_
 
