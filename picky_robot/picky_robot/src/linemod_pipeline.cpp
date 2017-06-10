@@ -61,6 +61,7 @@ int main(int argc, char * argv[])
       rclcpp::node::Node::make_shared("astra_camera");
   rclcpp::node::Node::SharedPtr astra_private_node =
       rclcpp::node::Node::make_shared("astra_camera_");
+  astra_private_node->set_parameter_if_not_set("depth_registration", true);
 
   astra_wrapper::AstraDriver drv(astra_node, astra_private_node,
     rgb_width, rgb_height, framerate,
