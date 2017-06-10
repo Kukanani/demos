@@ -27,7 +27,6 @@
 #include "rcl/rcl.h"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "intra_process_demo/image_pipeline/common.hpp"
 #include "tf2/LinearMath/Matrix3x3.h"
 
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
@@ -39,6 +38,7 @@
 #include "vision_msgs/msg/object_hypothesis_with_pose.hpp"
 
 #include "linemod_basic_detector/linemod.hpp"
+#include "linemod_basic_detector/image_utils.hpp"
 
 class LinemodNode : public rclcpp::Node
 {

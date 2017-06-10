@@ -24,7 +24,6 @@ find_package(OpenCV REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system thread)
 
 find_package(ork_renderer REQUIRED)
-find_package(intra_process_demo REQUIRED)
 
 ################################################################################
 
@@ -44,7 +43,6 @@ ament_target_dependencies(linemod_node
   "OpenCV"
   "${PROJECT_NAME}"
   "ork_renderer"
-  "intra_process_demo"
   "tf2"
   "tf2_geometry_msgs"
 )

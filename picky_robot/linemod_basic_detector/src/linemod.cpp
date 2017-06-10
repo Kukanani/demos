@@ -174,7 +174,7 @@ std::vector<LinemodDetection> Linemod::detect(cv::Mat& color_in,
   std::vector<cv::linemod::Match> matches;
   std::vector<cv::String> class_ids;
   std::vector<cv::Mat> quantized_images;
-  float matching_threshold = 80;
+  float matching_threshold = 85;
   detector_.match(sources, (float)matching_threshold, matches, class_ids,
                   quantized_images);
 
